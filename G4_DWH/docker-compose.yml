@@ -1,0 +1,76 @@
+version: "3.8"
+
+services:
+  postgres_dwh:
+    image: postgres:16-alpine
+    container_name: nafad_dwh_postgres
+    environment:
+      POSTGRES_DB: dwh_nafad_pay
+      POSTGRES_USER: dwh_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-RGHgv5#Kp9mX2wQl}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./staging:/staging:ro
+    networks:
+      - nafad_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dwh_user -d dwh_nafad_pay"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "1"
+          memory: 1G
+
+  # Optional: pgAdmin for database management via web UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nafad_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@nafad.com
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres_dwh
+    networks:
+      - nafad_network
+    profiles:
+      - admin
+
+  # Optional: Metabase for BI Dashboard
+  metabase:
+    image: metabase/metabase:latest
+    container_name: nafad_metabase
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_HOST: postgres_dwh
+      MB_DB_USER: metabase_user
+      MB_DB_PASS: ${METABASE_DB_PASS:-metabase123}
+      MB_DB_PORT: 5432
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres_dwh:
+        condition: service_healthy
+    networks:
+      - nafad_network
+    profiles:
+      - bi
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  nafad_network:
+    driver: bridge
