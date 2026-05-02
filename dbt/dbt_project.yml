@@ -1,0 +1,36 @@
+name: 'nafad_pay_dwh'
+version: '1.0.0'
+config-version: 2
+
+profile: 'nafad_pay'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  nafad_pay_dwh:
+    staging:
+      +materialized: view
+      +schema: staging
+    marts:
+      +materialized: table
+      +schema: marts
+    snapshots:
+      +target_schema: snapshots
+
+vars:
+  # Date de début du DWH (2024-01-01)
+  start_date: '2024-01-01'
+  # Exclusion des CONFLICT sans montant nodal pour les KPIs financiers
+  exclude_unresolvable_conflicts: true
+  # Seuil clock skew toléré (minutes)
+  clock_skew_tolerance_minutes: 5

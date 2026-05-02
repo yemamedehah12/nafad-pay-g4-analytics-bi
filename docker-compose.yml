@@ -1,0 +1,88 @@
+version: "3.9"
+
+services:
+
+  # Base de données DWH principale
+  postgres_dwh:
+    image: postgres:16-alpine
+    container_name: nafad_dwh_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dwh_nafad_pay
+      POSTGRES_USER: dwh_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-RGHgv5#Kp9mX2wQl}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data:/data:ro
+      - ./sql:/sql:ro
+    networks:
+      - nafad_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dwh_user -d dwh_nafad_pay"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+
+  # pgAdmin — interface SQL web
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nafad_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@nafad.com
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres_dwh
+    networks:
+      - nafad_network
+    profiles:
+      - admin
+
+  # Apache Superset — BI Dashboard (standard industrie)
+  superset:
+    image: apache/superset:latest
+    container_name: nafad_superset
+    environment:
+      SUPERSET_SECRET_KEY: "nafad_pay_g4_superset_2024"
+      SUPERSET_LOAD_EXAMPLES: "no"
+    ports:
+      - "8088:8088"
+    depends_on:
+      postgres_dwh:
+        condition: service_healthy
+    networks:
+      - nafad_network
+    profiles:
+      - bi
+    volumes:
+      - superset_home:/app/superset_home
+    command: >
+      /bin/bash -c "
+        superset db upgrade &&
+        superset fab create-admin
+          --username admin
+          --firstname Admin
+          --lastname NAFAD
+          --email admin@nafad.com
+          --password Admin1234 2>/dev/null || true &&
+        superset init &&
+        superset run -h 0.0.0.0 -p 8088 --with-threads"
+
+volumes:
+  postgres_data:
+    driver: local
+  superset_home:
+    driver: local
+
+networks:
+  nafad_network:
+    driver: bridge

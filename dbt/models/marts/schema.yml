@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: fact_transactions
+    description: "Table de faits centrale — grain = 1 transaction"
+    columns:
+      - name: transaction_id
+        tests: [not_null, unique]
+      - name: date_key
+        tests: [not_null, relationships: {to: ref('dim_date'), field: date_key}]
+      - name: user_key
+        tests: [not_null]
+      - name: amount
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['SUCCESS', 'FAILED', 'PENDING', 'REVERSED', 'PARTIAL']
+      - name: transaction_type
+        tests:
+          - accepted_values:
+              values: ['DEP', 'WIT', 'TRF', 'PAY', 'BIL', 'AIR', 'SAL', 'REV']
+
+  - name: dim_user
+    description: "Dimension utilisateur — SCD Type 2"
+    columns:
+      - name: user_id
+        tests: [not_null]
+      - name: is_current
+        tests: [not_null]
+      - name: kyc_level
+        tests:
+          - accepted_values:
+              values: ['LEVEL_0', 'LEVEL_1', 'LEVEL_2', 'LEVEL_3', 'N/A']
+
+  - name: dim_date
+    description: "Calendrier 2024"
+    columns:
+      - name: date_key
+        tests: [not_null, unique]
+      - name: full_date
+        tests: [not_null, unique]
+
+  - name: dim_merchant
+    description: "Marchands (500 + 1 dummy)"
+    columns:
+      - name: merchant_id
+        tests: [not_null, unique]
+
+  - name: dim_agency
+    description: "Agences (100 + 1 dummy)"
+    columns:
+      - name: agency_id
+        tests: [not_null, unique]

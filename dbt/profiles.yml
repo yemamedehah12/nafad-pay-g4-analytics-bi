@@ -1,0 +1,27 @@
+nafad_pay:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: dwh_user
+      password: "{{ env_var('DB_PASSWORD', 'RGHgv5#Kp9mX2wQl') }}"
+      dbname: dwh_nafad_pay
+      schema: public
+      threads: 4
+      connect_timeout: 10
+
+    prod:
+      type: postgres
+      # En prod : AWS Redshift Serverless
+      # type: redshift
+      host: "{{ env_var('REDSHIFT_HOST') }}"
+      port: 5439
+      user: "{{ env_var('REDSHIFT_USER') }}"
+      password: "{{ env_var('REDSHIFT_PASSWORD') }}"
+      dbname: nafad_dwh
+      schema: marts
+      threads: 8
+      connect_timeout: 30
+      sslmode: require

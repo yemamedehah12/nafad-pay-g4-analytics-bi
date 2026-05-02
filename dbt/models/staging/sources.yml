@@ -1,0 +1,40 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Tables de staging chargées depuis les CSV G3/G4"
+    schema: public
+    tables:
+      - name: tmp_transactions
+        description: "Transactions brutes (100 000 lignes, 45 colonnes)"
+        columns:
+          - name: id
+            description: "Identifiant unique de la transaction"
+            tests:
+              - not_null
+              - unique
+          - name: sync_status
+            description: "Statut de synchronisation inter-noeuds"
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['SUCCESS', 'CONFLICT', 'LAGGING', 'PENDING']
+          - name: transaction_type
+            tests:
+              - accepted_values:
+                  values: ['DEP', 'WIT', 'TRF', 'PAY', 'BIL', 'AIR', 'SAL', 'REV']
+
+      - name: tmp_users
+        description: "Utilisateurs (10 000 lignes)"
+        columns:
+          - name: id
+            tests: [not_null, unique]
+
+      - name: tmp_merchants
+        description: "Marchands (500 lignes)"
+
+      - name: tmp_agencies
+        description: "Agences (100 lignes)"
+
+      - name: tmp_fees
+        description: "Frais de transaction (41 391 lignes)"

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>NAFAD-PAY - Cadrage pédagogique & modèles d'architecture</title>
+<style>
+  :root {
+    --primary: #0b5394;
+    --accent: #ff9900;
+    --bg: #fdfdfd;
+    --text: #1a1a1a;
+    --muted: #555;
+    --border: #ddd;
+    --code-bg: #f5f5f5;
+    --success: #2e7d32;
+    --warn: #c62828;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  header {
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+  }
+  header h1 { margin: 0 0 .3rem 0; color: var(--primary); font-size: 1.9rem; }
+  header .subtitle { color: var(--muted); font-size: 1rem; }
+  header .meta { color: var(--muted); font-size: .85rem; margin-top: .5rem; }
+
+  nav.toc {
+    background: #f0f6fc;
+    border-left: 4px solid var(--primary);
+    padding: 1rem 1.5rem;
+    margin-bottom: 2.5rem;
+    border-radius: 4px;
+  }
+  nav.toc h2 { margin-top: 0; font-size: 1.1rem; color: var(--primary); }
+  nav.toc ol { margin: .5rem 0 0 1.2rem; padding: 0; }
+  nav.toc a { color: var(--primary); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  h2 {
+    color: var(--primary);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: .4rem;
+    margin-top: 2.5rem;
+    font-size: 1.5rem;
+  }
+  h3 { color: #333; margin-top: 1.8rem; font-size: 1.2rem; }
+  h4 { color: #444; margin-top: 1.4rem; font-size: 1rem; }
+
+  p, li { font-size: .97rem; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    font-size: .92rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: .55rem .75rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--primary); color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #f9f9f9; }
+
+  code {
+    background: var(--code-bg);
+    padding: .12rem .35rem;
+    border-radius: 3px;
+    font-family: "Consolas", "Monaco", monospace;
+    font-size: .88em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    padding: .9rem 1rem;
+    overflow-x: auto;
+    border-radius: 4px;
+    font-size: .85rem;
+    line-height: 1.45;
+  }
+  pre code { background: transparent; padding: 0; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fff8e7;
+    padding: .8rem 1rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+  }
+  .callout.info { border-left-color: var(--primary); background: #eef5fc; }
+  .callout.success { border-left-color: var(--success); background: #e8f5e9; }
+  .callout.warn { border-left-color: var(--warn); background: #fdecea; }
+  .callout strong { display: block; margin-bottom: .25rem; }
+
+  .badge {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    padding: .15rem .55rem;
+    border-radius: 10px;
+    font-size: .75rem;
+    font-weight: 600;
+    margin-left: .4rem;
+    vertical-align: middle;
+  }
+  .badge.oblig { background: var(--warn); }
+  .badge.bonus { background: var(--accent); color: #000; }
+
+  .group-card {
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--primary);
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+    background: #fafbfd;
+  }
+  .group-card h4 { margin-top: 0; color: var(--primary); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: .85rem;
+    text-align: center;
+  }
+
+  @media print {
+    body { max-width: none; padding: 1cm; }
+    nav.toc { page-break-after: always; }
+    h2 { page-break-before: auto; }
+    pre, table, .callout { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>NAFAD-PAY - Projet Data & Systèmes Distribués</h1>
+  <div class="subtitle">Cadrage, architecture et évaluation</div>
+  <div class="meta">4 groupes : OLTP · Simulator · ETL · DWH</div>
+</header>
+
+<nav class="toc">
+  <h2>Sommaire</h2>
+  <ol>
+    <li><a href="#intro">Introduction & consignes générales</a></li>
+    <li><a href="#livrables">Livrables communs aux 4 groupes</a></li>
+    <li><a href="#archi-template">Template du document d'architecture (Early Stage &amp; At Scale)</a></li>
+    <li><a href="#eval">Grille d'évaluation</a></li>
+    <li><a href="#groupes">Rappel des 4 groupes &amp; livrables spécifiques</a></li>
+    <li><a href="#stack">Choix de stack par chemin critique (langages &amp; services cloud)</a></li>
+    <li><a href="#faq">FAQ &amp; règles du jeu</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================== -->
+<section id="intro">
+<h2>1. Introduction &amp; consignes générales</h2>
+
+<p><strong>NAFAD-PAY</strong> est un système fictif de paiement mobile mauritanien. Vous travaillerez sur un jeu de données synthétique (seed 42) reproduisant les problématiques réelles d'un système de paiement distribué : concurrence, clock skew, idempotence, eventual consistency, réconciliation multi-nœuds.</p>
+
+<div class="callout info">
+  <strong>Objectif pédagogique double</strong>
+  Chaque groupe doit (1) <strong>implémenter</strong> une solution fonctionnelle sur les données fournies, ET (2) produire <strong>deux documents d'architecture</strong> : une version "Early Stage" (MVP livrable immédiatement) et une version "At Scale" (cible à forte charge). L'enjeu est de raisonner sur les trade-offs, pas seulement d'écrire du code.
+</div>
+
+<h3>Contexte métier</h3>
+<ul>
+  <li>Monnaie : MRU (Ouguiya mauritanien)</li>
+  <li>Pays : Mauritanie - indicatif +222 - NNI 10 chiffres</li>
+  <li>15 wilayas (régions), moughataas (départements)</li>
+  <li>Infrastructure : <strong>aucun cloud provider majeur n'a de datacenter en Mauritanie</strong>. <strong>Tous les groupes travaillent sur AWS</strong> (région cible <code>eu-west-3</code> Paris, 3 AZ). Hetzner peut être évoqué en comparaison pour le bare-metal low-cost. À vous de justifier vos choix (latence, souveraineté, coût, conformité BCM).</li>
+</ul>
+
+<div class="callout warn">
+  <strong>Données synthétiques</strong>
+  Les données sont générées avec seed 42 - aucun utilisateur réel. Elles contiennent des <strong>anomalies intentionnelles</strong> (doublons, soft-deletes, clock skew, conflits inter-nœuds). À vous de les détecter et d'en tenir compte dans vos schémas. Ne pas redistribuer hors du cadre de la formation.
+</div>
+
+<h3>Les seuls datacenters réels à votre disposition</h3>
+
+<p>Oubliez les datacenters fictifs à Nouakchott / Nouadhibou. Dans la vraie vie, <strong>il n'existe aucune région cloud majeure en Mauritanie ni dans les pays limitrophes</strong>. Vos seuls choix réalistes :</p>
+
+<table>
+  <thead>
+    <tr><th>Provider</th><th>Région (code)</th><th>Ville</th><th>Distance ≈ Nouakchott</th><th>Intérêt pour NAFAD-PAY</th></tr>
+  </thead>
+  <tbody>
+    <tr><td rowspan="3"><strong>Hetzner</strong></td><td><code>fsn1</code></td><td>Falkenstein (DE)</td><td>~4 500 km</td><td>Le moins cher, bare-metal possible, pas de région africaine</td></tr>
+    <tr><td><code>nbg1</code></td><td>Nuremberg (DE)</td><td>~4 400 km</td><td>Alternative Falkenstein, même zone UE</td></tr>
+    <tr><td><code>hel1</code></td><td>Helsinki (FI)</td><td>~5 500 km</td><td>Latence plus haute, utile pour DR éloigné</td></tr>
+    <tr><td rowspan="4"><strong>AWS (cible principale)</strong></td><td><code>eu-west-3</code></td><td>Paris (FR)</td><td>~4 000 km</td><td>Le plus proche, francophone. <strong>AZ</strong> : eu-west-3a, eu-west-3b, eu-west-3c</td></tr>
+    <tr><td><code>eu-west-1</code></td><td>Dublin (IE)</td><td>~4 300 km</td><td>Région historique AWS, la plus fournie en services</td></tr>
+    <tr><td><code>af-south-1</code></td><td>Le Cap (ZA)</td><td>~7 000 km</td><td>Seule région AWS en Afrique, mais très loin au sud</td></tr>
+    <tr><td><code>me-south-1</code></td><td>Bahreïn</td><td>~6 500 km</td><td>Moyen-Orient, utile pour compliance spécifique</td></tr>
+    <tr><td rowspan="3"><strong>GCP (à titre de comparaison)</strong></td><td><code>europe-west9</code></td><td>Paris (FR)</td><td>~4 000 km</td><td>Équivalent AWS Paris, pricing différent. <strong>AZ</strong> : europe-west9-a/b/c</td></tr>
+    <tr><td><code>europe-west1</code></td><td>Saint-Ghislain (BE)</td><td>~4 400 km</td><td>Région GCP historique en Europe, écosystème data complet (BigQuery, Pub/Sub)</td></tr>
+    <tr><td><code>me-central2</code></td><td>Dammam (SA)</td><td>~6 800 km</td><td>Alternative Moyen-Orient GCP</td></tr>
+  </tbody>
+</table>
+<p style="font-size:.9em;color:var(--muted);margin-top:.5em;">GCP est listé uniquement pour vous aider à comparer les modèles économiques et les services équivalents. Votre implémentation reste sur AWS.</p>
+
+<div class="callout info">
+  <strong>Contrainte structurante à intégrer dans vos docs d'archi</strong>
+  Un aller-retour Nouakchott ↔ Paris coûte ~40-60 ms de latence réseau <em>incompressible</em>. Pour un système de paiement où chaque écriture passe par votre base, cela fixe un plafond dur sur le nombre de transactions qu'un utilisateur peut faire sans ressentir de lenteur. Votre archi doit en tenir compte (cache, edge, confirmation asynchrone, ou hébergement hybride VPS local + cloud).
+</div>
+
+<div class="callout">
+  <strong>Ce qu'on cherche à évaluer</strong>
+  Un bon doc d'archi ne se limite pas à "mettre du AWS". Il justifie : choix de <code>eu-west-3</code> vs <code>af-south-1</code> (distance vs proximité africaine), multi-AZ vs multi-region, setup hybride VPS Hetzner local + AWS Paris pour la latence, stratégie de coût (Savings Plans, Reserved Instances), conformité BCM et exigences locales.
+</div>
+
+<h3>Table de correspondance - Datacenters fictifs des données → AWS réels</h3>
+
+<p>Les données CSV fournies contiennent des noms fictifs (<code>DC-NKC-PRIMARY</code>, <code>NDB-NODE-1</code>, etc.) qui représentent le système de production <em>imaginaire</em> de NAFAD-PAY. Pour concevoir votre architecture <strong>réelle sur AWS</strong>, utilisez cette correspondance :</p>
+
+<table>
+  <thead>
+    <tr><th>Nom fictif dans les données</th><th>Correspondance AWS réelle</th><th>Usage dans votre archi</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>DC-NKC-PRIMARY</code></td><td><code>eu-west-3a</code> (Paris AZ-a)</td><td>AZ primaire pour les writes OLTP</td></tr>
+    <tr><td><code>DC-NKC-SECONDARY</code></td><td><code>eu-west-3b</code> (Paris AZ-b)</td><td>AZ secondaire, replica synchrone</td></tr>
+    <tr><td><code>DC-NDB</code></td><td><code>eu-west-3c</code> (Paris AZ-c)</td><td>AZ pour DR local et lectures analytiques</td></tr>
+    <tr><td><code>NKC-NODE-1 / 2 / 3</code></td><td>3 instances EC2 ou tasks ECS réparties sur <code>eu-west-3a/b</code></td><td>Pool de nœuds applicatifs Nouakchott (primaire)</td></tr>
+    <tr><td><code>NDB-NODE-1 / 2</code></td><td>2 instances EC2 ou tasks ECS sur <code>eu-west-3c</code></td><td>Pool de nœuds applicatifs Nouadhibou (DR)</td></tr>
+  </tbody>
+</table>
+
+<div class="callout info">
+  <strong>Important</strong>
+  Les données CSV ne seront <strong>pas modifiées</strong> - elles gardent leurs noms fictifs pour simuler un système de production existant. Votre travail consiste à dessiner l'architecture AWS <em>cible</em> et à expliquer la migration depuis ce système legacy.
+</div>
+</section>
+
+<!-- ============================================== -->
+<section id="livrables">
+<h2>2. Livrables communs aux 4 groupes</h2>
+
+<p>Chaque groupe rend <strong>tous</strong> les livrables suivants :</p>
+
+<table>
+  <thead>
+    <tr><th>#</th><th>Livrable</th><th>Format</th><th>Pondération</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td><strong>Document d'architecture "Early Stage"</strong> (MVP, 1‑2 pages)</td><td>PDF ou Markdown</td><td>15 %</td></tr>
+    <tr><td>2</td><td><strong>Document d'architecture "At Scale"</strong> (cible haute charge, 2‑3 pages)</td><td>PDF ou Markdown</td><td>20 %</td></tr>
+    <tr><td>3</td><td><strong>Implémentation fonctionnelle</strong> (code + scripts + données)</td><td>Dépôt Git</td><td>40 %</td></tr>
+    <tr><td>4</td><td><strong>Réponses aux questions d'investigation</strong> (systèmes distribués)</td><td>Markdown</td><td>15 %</td></tr>
+    <tr><td>5</td><td><strong>Qualité code / SQL / documentation / README</strong></td><td>-</td><td>10 %</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <strong>Nouveauté par rapport à la première version du sujet</strong>
+  Les deux documents d'architecture sont désormais <strong>obligatoires</strong>. Ils remplacent la section "BONUS - Scalabilité" : elle devient un livrable à part entière, mais sous forme de <em>document</em>, pas d'implémentation.
+</div>
+</section>
+
+<!-- ============================================== -->
+<section id="archi-template">
+<h2>3. Template du document d'architecture</h2>
+
+<p>Utilisez ce plan pour les <strong>DEUX</strong> documents (Early Stage et At Scale). Même structure, contenu différent : le doc Early Stage décrit le MVP livré; le doc At Scale décrit la cible et comment y migrer.</p>
+
+<h3>3.1 Plan commun imposé</h3>
+
+<pre><code># Document d'Architecture - [Groupe GX] - [Early Stage | At Scale]
+
+## 1. Contexte &amp; contraintes
+- Charge visée (QPS, volume de données, nombre d'utilisateurs)
+- SLA / SLO (disponibilité, latence p50/p99, RPO/RTO)
+- Contraintes non-fonctionnelles (budget, équipe, compliance)
+- Hypothèses explicites
+
+## 2. Diagramme d'architecture (C4 simplifié)
+- Niveau 1 - System Context : qui interagit avec le système ?
+- Niveau 2 - Containers : services, BDD, files, caches
+- (Outil conseillé : draw.io, Excalidraw, Mermaid, ou schéma manuel scanné)
+
+## 3. Choix techniques &amp; alternatives rejetées (ADR-lite)
+Pour chaque choix important, 3 lignes :
+- **Décision :** ...
+- **Alternatives considérées :** ...
+- **Pourquoi ce choix :** ...
+
+## 4. Flux de données critiques
+- Débit d'un paiement (happy path) - en schéma + 5 lignes
+- Gestion d'un échec / retry / timeout
+- Idempotence : comment est-elle garantie ?
+
+## 5. Points de rupture connus &amp; seuils de bascule
+- À quelle charge l'archi ne tient plus ?
+- Quels signaux déclenchent la migration vers la version "At Scale" ?
+  (ex : p99 &gt; 500 ms, connexions PG &gt; 80 %, stockage &gt; 70 %)
+
+## 6. Plan de migration  (uniquement dans le doc "At Scale")
+- Étapes ordonnées pour passer de Early Stage à At Scale
+- Ce qu'on peut faire sans downtime, ce qui en nécessite
+- Ordre de grandeur de l'effort (personne-jours)
+
+## 7. Risques &amp; mitigations
+Top 3 risques, chacun avec sa mitigation.
+</code></pre>
+
+<h3>3.2 Ce qu'on attend concrètement</h3>
+
+<div class="group-card">
+  <h4>Document "Early Stage"</h4>
+  <ul>
+    <li><strong>Objectif :</strong> faire tourner le système <em>maintenant</em>, avec l'équipe et les moyens actuels.</li>
+    <li><strong>Ordre de grandeur :</strong> ≤ 50 QPS, &lt; 1 M de lignes, 1 à 3 serveurs.</li>
+    <li><strong>Choix typiques :</strong> un seul PostgreSQL, cron + script Python, dashboard BI simple, pas de Kafka.</li>
+    <li><strong>Focus :</strong> simplicité, time-to-market, observabilité minimale.</li>
+  </ul>
+</div>
+
+<div class="group-card" style="border-left-color: var(--accent);">
+  <h4>Document "At Scale"</h4>
+  <ul>
+    <li><strong>Objectif :</strong> supporter 5 M tx/mois, 500 k utilisateurs actifs, multi-datacenter.</li>
+    <li><strong>Ordre de grandeur :</strong> &gt; 500 QPS en pic, partitionnement/sharding, réplication, streaming.</li>
+    <li><strong>Choix typiques :</strong> AWS RDS PostgreSQL Multi-AZ avec read replicas, AWS Kinesis ou SQS pour le streaming, RDS Proxy, materialized views, cache ElastiCache Redis.</li>
+    <li><strong>Focus :</strong> scalabilité horizontale, résilience, cohérence (eventual vs strong), coût maîtrisé.</li>
+  </ul>
+</div>
+
+<div class="callout info">
+  <strong>Règle d'or</strong>
+  Pas de "cargo-culting". Si vous mettez Kafka dans votre archi "At Scale", expliquez <em>pourquoi</em> et <em>quel problème précis</em> il résout chez NAFAD-PAY. Un doc avec 15 briques AWS sans justification = note &lt; la moyenne.
+</div>
+</section>
+
+<!-- ============================================== -->
+<section id="eval">
+<h2>4. Grille d'évaluation</h2>
+
+<h3>4.1 Pondération par livrable</h3>
+
+<table>
+  <thead>
+    <tr><th>Livrable</th><th>Critères</th><th>Points</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Doc archi Early Stage</td>
+      <td>
+        Respect du template (3 pts)<br>
+        Choix techniques justifiés avec ADR-lite (5 pts)<br>
+        Diagramme clair et lisible (3 pts)<br>
+        Réalisme / faisabilité (4 pts)
+      </td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <td>Doc archi At Scale</td>
+      <td>
+        Respect du template (3 pts)<br>
+        Identification des points de rupture (4 pts)<br>
+        Plan de migration crédible (5 pts)<br>
+        Trade-offs explicites (cohérence/coût/complexité) (5 pts)<br>
+        Diagramme de la cible (3 pts)
+      </td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <td>Implémentation</td>
+      <td>
+        Fonctionne sur les données fournies (15 pts)<br>
+        Gestion des anomalies intentionnelles (10 pts)<br>
+        Reproductibilité (script unique / Docker / README) (8 pts)<br>
+        Tests ou validations (7 pts)
+      </td>
+      <td>40</td>
+    </tr>
+    <tr>
+      <td>Questions d'investigation</td>
+      <td>
+        Exactitude des réponses (8 pts)<br>
+        Justification par les données (requêtes, chiffres) (7 pts)
+      </td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <td>Qualité générale</td>
+      <td>
+        Lisibilité code/SQL (4 pts)<br>
+        README clair, setup reproductible (3 pts)<br>
+        Commits Git propres (3 pts)
+      </td>
+      <td>10</td>
+    </tr>
+    <tr style="background:#eef5fc;font-weight:bold;">
+      <td>Total</td>
+      <td>-</td>
+      <td>100</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>4.2 Échelle qualitative (référence rapide)</h3>
+
+<table>
+  <thead><tr><th>Note</th><th>Niveau attendu</th></tr></thead>
+  <tbody>
+    <tr><td>≥ 85</td><td>Excellent - archi pro, code propre, toutes les anomalies identifiées, trade-offs maîtrisés</td></tr>
+    <tr><td>70-84</td><td>Très bien - implémentation solide, archi correcte mais justifications parfois légères</td></tr>
+    <tr><td>55-69</td><td>Acceptable - ça tourne, mais anomalies partiellement détectées, archi trop générique</td></tr>
+    <tr><td>40-54</td><td>Insuffisant - implémentation partielle ou docs d'archi copiées d'un tuto</td></tr>
+    <tr><td>&lt; 40</td><td>À refaire</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ============================================== -->
+<section id="groupes">
+<h2>5. Rendu détaillé par groupe - 10 jours max</h2>
+
+<div class="callout info">
+  <strong>Philosophie du rendu</strong>
+  L'<strong>implémentation reste simple</strong> (Docker Compose, UI minimale). Ce qui doit être <strong>complexe et réaliste</strong>, c'est le <strong>document d'architecture</strong> : où héberger, comment sécuriser, quels protocoles, quelle isolation réseau, quel modèle de menace. Chaque groupe aura accès à un <strong>compte AWS sandbox</strong> (région <code>eu-west-3</code> Paris) pour tester son déploiement.
+</div>
+
+<h3>Planning recommandé sur 10 jours</h3>
+
+<table>
+  <thead>
+    <tr><th>Jours</th><th>Activité</th><th>Livrable intermédiaire</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>J1 - J2</td><td>Exploration des données, lecture du README, première ébauche du doc archi Early Stage</td><td>Brouillon archi + ERD (G1) ou analyse EDA (G2-4)</td></tr>
+    <tr><td>J3 - J6</td><td>Implémentation locale via Docker Compose (cœur du code)</td><td>Stack qui tourne en local, tests qui passent</td></tr>
+    <tr><td>J7</td><td>Déploiement test sur le projet AWS fourni (sandbox)</td><td>URL ou endpoint accessible</td></tr>
+    <tr><td>J8 - J9</td><td>Doc archi At Scale (réseau, sécurité, scale, threat model)</td><td>Deux PDF finaux (Early Stage + At Scale)</td></tr>
+    <tr><td>J10</td><td>Polish, README final, soutenance</td><td>Repo Git propre + démo</td></tr>
+  </tbody>
+</table>
+
+<h3>Règle commune à tous les groupes</h3>
+
+<p>Chaque doc d'archi doit obligatoirement traiter ces <strong>4 dimensions</strong> :</p>
+
+<ol>
+  <li><strong>Hébergement &amp; déploiement</strong> - tous les groupes travaillent sur <strong>AWS</strong> (région <code>eu-west-3</code> Paris). Quel service précis, quels AZ, quelle topologie</li>
+  <li><strong>Réseau</strong> - VPC, sous-réseaux privés/publics, firewall, peering, pas d'IP publique inutile, diagramme réseau</li>
+  <li><strong>Sécurité</strong> - chiffrement at-rest et in-transit, gestion des secrets, IAM moindre privilège, protection DDoS/injection, threat model (top 3 attaques + mitigations)</li>
+  <li><strong>Protocole de communication</strong> - REST / gRPC / JDBC / SQS / Kinesis, pourquoi, quelle authentification, quel rate limiting</li>
+</ol>
+
+<!-- ============ G1 ============ -->
+<div class="group-card">
+  <h4>G1 - Core Banking Team : Base OLTP PostgreSQL <span class="badge">PostgreSQL + Docker + AWS RDS</span></h4>
+
+  <p><strong>Rôle dans l'entreprise :</strong> <strong>Core Banking Backend Engineers</strong>. Vous concevez la base qui stocke chaque centime. Si elle tombe, perd ou corrompt une transaction, la fintech coule. Vous êtes l'équipe la plus proche de la comptabilité.</p>
+
+  <h5>Implémentation (simple, ~5 jours de code)</h5>
+  <ul>
+    <li><code>docker-compose.yml</code> avec un seul service : PostgreSQL 16</li>
+    <li><strong>Modèle de données 3NF</strong> : users, accounts, transactions, merchants, agencies, agents, fees - avec contraintes FK, CHECK, UNIQUE</li>
+    <li><strong>Index</strong> justifiés (un par requête critique identifiée, pas plus)</li>
+    <li>Script SQL de chargement des CSV fournis dans <code>G1_OLTP/</code></li>
+    <li><strong>Tests techniques</strong> : EXPLAIN ANALYZE sur les 5 requêtes les plus fréquentes, bench d'insertion concurrente (10 writers simultanés)</li>
+    <li><strong>Tests métier</strong> : impossible de créer une transaction avec <code>idempotency_key</code> en doublon, solde jamais négatif (contrainte CHECK ou trigger), <code>balance_after = balance_before ± amount</code> vérifié</li>
+    <li>Stratégie à choisir pour les 43,8 % de références orphelines (zone quarantine ou rejet strict)</li>
+  </ul>
+
+  <h5>Doc d'architecture AWS (complexe, ~3 jours)</h5>
+  <ul>
+    <li><strong>Hébergement :</strong> <strong>AWS RDS PostgreSQL 16</strong> Multi-AZ en région <code>eu-west-3</code> (Paris). Instance Graviton <code>db.m7g</code> pour le prix/perf. Comparer avec EC2 bare Postgres (moins cher, plus d'ops) et Hetzner (80 % moins cher mais pas managé)</li>
+    <li><strong>Réseau :</strong> RDS dans un subnet <strong>privé</strong>, aucune IP publique. Accès uniquement via <strong>PrivateLink</strong> ou VPC peering depuis le VPC applicatif. Security Group qui autorise le port 5432 uniquement depuis le SG de l'API. Schéma réseau obligatoire</li>
+    <li><strong>Sécurité :</strong>
+      <ul>
+        <li>Chiffrement at-rest avec <strong>AWS KMS</strong> (CMK gérée par NAFAD-PAY, rotation annuelle)</li>
+        <li>TLS 1.3 obligatoire, <code>rds.force_ssl = 1</code></li>
+        <li>Mots de passe dans <strong>AWS Secrets Manager</strong>, rotation automatique 30 jours via Lambda de rotation</li>
+        <li>Comptes Postgres dédiés par service (<code>app_writer</code>, <code>app_reader</code>, <code>etl_loader</code>) avec <code>GRANT</code> minimal</li>
+        <li>Audit : <code>pgaudit</code> activé, logs exportés vers <strong>CloudWatch Logs</strong> avec rétention 90 jours</li>
+      </ul>
+    </li>
+    <li><strong>Threat model :</strong> que se passe-t-il si l'API backend est compromise (attaquant avec credentials <code>app_writer</code>) ? si un dev pousse un <code>DROP TABLE</code> ? si un snapshot S3 fuite ? Proposer 3 mitigations concrètes (IAM conditions, snapshots chiffrés, blast radius limité par rôle)</li>
+    <li><strong>Protocole :</strong> PostgreSQL wire protocol sur TLS. Pooling via <strong>RDS Proxy</strong> (évite l'épuisement de connexions, failover transparent). Aucune connexion directe d'un dev en prod (passage par Session Manager pour le DBA)</li>
+    <li><strong>Isolation &amp; scale :</strong> stratégie de partitionnement natif PostgreSQL (par mois sur <code>transaction_date</code>), read replicas sur AZ différente, signal de passage à Aurora ou au sharding applicatif (quand > 5 k TPS en écriture)</li>
+    <li><strong>Backup &amp; DR :</strong> snapshots RDS automatiques + PITR 7 jours, copies cross-region (<code>eu-west-1</code>) pour DR, test de restore mensuel, RPO = 5 min, RTO = 30 min</li>
+  </ul>
+</div>
+
+<!-- ============ G2 ============ -->
+<div class="group-card">
+  <h4>G2 - Platform &amp; API Engineering Team : API + mini UI React <span class="badge">API + React + AWS ECS</span></h4>
+
+  <p><strong>Rôle dans l'entreprise :</strong> <strong>Platform / API Engineering Team</strong>. Vous exposez le système de paiement au monde extérieur. Chaque appel à votre API doit être traçable, sécurisable et scalable. Vous êtes la façade - et la première cible d'une attaque.</p>
+
+  <h5>Implémentation (simple, ~5 jours de code)</h5>
+  <ul>
+    <li><strong>API</strong> (Python/FastAPI ou Go) avec 4 endpoints :
+      <ul>
+        <li><code>POST /transactions</code> - simule une transaction (écrit dans la DB de G1)</li>
+        <li><code>GET /transactions?limit=50</code> - liste les dernières transactions (pagination obligatoire)</li>
+        <li><code>GET /stats</code> - agrégats simples (volume jour, taux de succès)</li>
+        <li><code>POST /simulate/batch?n=1000</code> - génère N transactions synthétiques</li>
+      </ul>
+    </li>
+    <li><strong>Mini interface React</strong> (Vite) sans auth : un formulaire "générer X transactions" + un tableau live des 50 dernières tx. Démonstration, pas produit fini</li>
+    <li><code>docker-compose.yml</code> : <code>api + react + postgres</code></li>
+    <li>Tests d'intégration (pytest/httpx ou Go testing)</li>
+  </ul>
+
+  <h5>Doc d'architecture AWS (complexe, ~3 jours)</h5>
+  <ul>
+    <li><strong>Hébergement :</strong>
+      <ul>
+        <li>API sur <strong>AWS ECS Fargate</strong> derrière un <strong>ALB</strong> (task multi-AZ). Alternative comparée : Lambda derrière API Gateway (latence de cold-start à évaluer)</li>
+        <li>Front React bundle statique sur <strong>S3</strong> + <strong>CloudFront</strong> CDN (cache à l'edge, HTTPS ACM)</li>
+      </ul>
+    </li>
+    <li><strong>Réseau :</strong>
+      <ul>
+        <li>ALB public dans subnets publics, tâches ECS dans subnets privés</li>
+        <li>ECS se connecte à RDS (G1) via le SG privé, port 5432 autorisé seulement depuis le SG ECS</li>
+        <li>Sortie Internet des tâches via <strong>NAT Gateway</strong> (ou VPC endpoints S3/Secrets Manager pour éviter NAT)</li>
+        <li>Schéma obligatoire : <code>Internet → CloudFront → ALB → ECS → (SG privé) → RDS</code></li>
+      </ul>
+    </li>
+    <li><strong>Sécurité</strong> (conçue même si non implémentée) :
+      <ul>
+        <li>Auth : <strong>Cognito User Pools</strong> pour les end-users (OAuth2/OIDC), <strong>API keys</strong> via API Gateway usage plans pour partenaires B2B - justifier le choix</li>
+        <li>Rate limiting : <strong>AWS WAF</strong> rate-based rules par IP, <strong>AWS Shield Standard</strong> inclus, Shield Advanced si trafic sensible</li>
+        <li>WAF : règles managées AWS (CRS, Known Bad Inputs, SQL Injection, XSS)</li>
+        <li>Secrets : <strong>Secrets Manager</strong>, injection au boot de la tâche via IAM task role. Pas de <code>.env</code> en prod</li>
+        <li>HTTPS obligatoire, HSTS, CSP stricte, CORS whitelist sur le domaine React</li>
+        <li>Protection OWASP Top 10 (SQL injection via prepared statements même avec ORM, CSRF tokens, XSS sanitization, IDOR avec contrôle d'autorisation ligne par ligne)</li>
+      </ul>
+    </li>
+    <li><strong>Threat model :</strong> DDoS massif, fuite d'une API key (rotation + révocation), XSS sur le React (CSP nonce), replay attack (idempotency-key header obligatoire côté API). 3 mitigations par menace</li>
+    <li><strong>Protocole :</strong> REST/JSON pour l'externe (compatibilité), HTTP/2, compression gzip, pagination obligatoire sur les GET liste. gRPC interne si microservices</li>
+    <li><strong>Observabilité :</strong> logs JSON structurés → <strong>CloudWatch Logs</strong>, métriques p50/p95/p99 → <strong>CloudWatch Metrics</strong>, traces via <strong>AWS X-Ray</strong>, alarmes sur erreurs 5xx et latence</li>
+    <li><strong>Scale :</strong> ECS Service Auto Scaling (target tracking sur CPU/requêtes), RDS Proxy pour ne pas épuiser les connexions, <strong>SQS</strong> devant les écritures si pic violent (decoupling producer/consumer)</li>
+  </ul>
+</div>
+
+<!-- ============ G3 ============ -->
+<div class="group-card">
+  <h4>G3 - Data Engineering Team : Medallion Architecture <span class="badge">Bronze / Silver / Gold + AWS S3</span></h4>
+
+  <p><strong>Rôle dans l'entreprise :</strong> <strong>Data Engineering Team</strong>. Vous faites circuler et nettoyer les données entre les systèmes OLTP et analytiques. Un doublon, une ligne perdue, et la compta ne tombe plus juste. Vous êtes l'épine dorsale de la data.</p>
+
+  <div class="callout info">
+    <strong>Pourquoi Medallion Architecture ?</strong>
+    C'est le standard de fait pour l'ingestion moderne (Databricks, Snowflake, AWS Lake Formation). Trois couches : <strong>Bronze</strong> (données brutes immuables), <strong>Silver</strong> (nettoyées, typées, dédupliquées), <strong>Gold</strong> (agrégats métier prêts pour G4). Chaque couche est <em>reproductible à partir de la précédente</em> - c'est la clé de l'idempotence.
+  </div>
+
+  <h5>Implémentation (simple, ~5 jours de code)</h5>
+  <ul>
+    <li><code>docker-compose.yml</code> : <code>postgres_warehouse + python_runner + minio</code> (MinIO = S3 local pour dev)</li>
+    <li><strong>Couche Bronze</strong> (ingestion brute) :
+      <ul>
+        <li>Lit les 7 dossiers <code>daily_dumps/2024-01-XX/</code> et les copie dans <code>bronze/</code> sur MinIO</li>
+        <li>Aucune transformation : <code>AS-IS</code>, même les lignes corrompues</li>
+        <li>Métadonnées ajoutées : <code>_ingested_at</code>, <code>_source_file</code>, <code>_batch_id</code></li>
+        <li>Table technique <code>bronze_runs</code> qui journalise chaque ingestion</li>
+      </ul>
+    </li>
+    <li><strong>Couche Silver</strong> (nettoyage) :
+      <ul>
+        <li>Lit Bronze, dédoublonne par <code>(reference, id)</code>, applique les soft-deletes du 19 janvier</li>
+        <li>Réconcilie full dumps (15, 18 janvier) vs deltas : le full du 18 est le point de contrôle</li>
+        <li>Normalise les schémas (G3 a <code>source_node/processing_node/source_datacenter/processing_datacenter</code> - les consolider)</li>
+        <li>Flagge les anomalies : <code>_has_clock_skew</code> (completed_at &lt; created_at = 2 575 lignes détectées)</li>
+        <li>Charge dans PostgreSQL, tables <code>silver_users</code>, <code>silver_accounts</code>, <code>silver_transactions</code>, <code>silver_fees</code></li>
+      </ul>
+    </li>
+    <li><strong>Couche Gold</strong> (agrégats métier) :
+      <ul>
+        <li>Tables prêtes pour G4 : <code>gold_daily_volume</code>, <code>gold_user_activity</code>, <code>gold_agency_perf</code></li>
+        <li>Rafraîchissement incrémental, pas de full refresh</li>
+      </ul>
+    </li>
+    <li><strong>Test d'idempotence :</strong> rejouer Bronze→Silver→Gold deux fois doit donner un état bit-exact identique</li>
+    <li><strong>Rapport d'anomalies</strong> (1 page Markdown) : 2 575 clock skews, 58 soft-deletes, volume cumulé vs full du 18</li>
+  </ul>
+
+  <h5>Doc d'architecture AWS (complexe, ~3 jours)</h5>
+  <ul>
+    <li><strong>Hébergement cible :</strong>
+      <ul>
+        <li><strong>Bronze</strong> : <strong>S3</strong> avec partitionnement Hive (<code>s3://nafad-bronze/dt=2024-01-15/</code>), format Parquet ou CSV+manifest, Object Lock pour immutabilité</li>
+        <li><strong>Silver</strong> : <strong>S3</strong> en Parquet partitionné, catalogué via <strong>AWS Glue Data Catalog</strong>, requêtable via <strong>Athena</strong></li>
+        <li><strong>Gold</strong> : <strong>RDS PostgreSQL</strong> séparé du DWH de G4 (ou Athena si volumes lourds)</li>
+        <li>Orchestration : <strong>EventBridge</strong> scheduler + <strong>Step Functions</strong> qui enchaîne Bronze → Silver → Gold, chaque étape étant un <strong>ECS task</strong> Fargate</li>
+      </ul>
+    </li>
+    <li><strong>Source des dumps :</strong> bucket <strong>S3</strong> dédié avec notifications <strong>EventBridge</strong> à l'arrivée d'un nouveau dump. Signed URLs si ingestion externe</li>
+    <li><strong>Réseau :</strong> ECS tasks dans subnets privés, accès S3 via <strong>VPC Endpoint Gateway</strong> (pas de passage par Internet), accès RDS Gold via Security Group privé</li>
+    <li><strong>Sécurité :</strong>
+      <ul>
+        <li>IAM role par étape Step Functions, scope minimal : Bronze task peut lire bucket source + écrire bucket Bronze. Rien de plus.</li>
+        <li>Chiffrement S3 par défaut (SSE-KMS avec CMK dédiée par couche Bronze/Silver/Gold)</li>
+        <li>Secrets DB dans <strong>Secrets Manager</strong>, injection via task role</li>
+        <li>Validation en amont : taille max du dump (10 GB), schéma CSV vérifié avec <code>pandera</code> ou <code>great_expectations</code>, quarantaine dans <code>s3://nafad-quarantine/</code> si corrompu</li>
+      </ul>
+    </li>
+    <li><strong>Threat model :</strong> dump altéré en transit (checksum S3 + signature MFA Delete), zip bomb (limite de taille, extraction en streaming), injection de lignes malveillantes (validation schéma + sanity checks métier), credentials en logs (filtres CloudWatch + redaction)</li>
+    <li><strong>Protocole :</strong> upload via S3 API HTTPS, chargement Postgres via <code>COPY FROM</code> sur connexion TLS, messages EventBridge signés</li>
+    <li><strong>Observabilité :</strong> <strong>CloudWatch Logs</strong> structurés par étape Step Functions, Dead Letter Queue SQS pour les échecs, alarmes CloudWatch si un run échoue ou si le lag dépasse 15 min, métrique "lignes Bronze / lignes Silver / lignes rejetées"</li>
+    <li><strong>Scale - passage au streaming :</strong> remplacer cron EventBridge par flux CDC (Debezium ou AWS DMS) depuis Postgres OLTP → <strong>Kinesis Data Streams</strong> → consumer ECS. Coexistence batch + streaming = Lambda Architecture (garder le batch pour le backfill, streaming pour le temps réel)</li>
+  </ul>
+</div>
+
+<!-- ============ G4 ============ -->
+<div class="group-card">
+  <h4>G4 - Analytics &amp; BI Team : Data Warehouse &amp; Dashboard <span class="badge">SQL / dbt + outil BI + AWS Redshift</span></h4>
+
+  <p><strong>Rôle dans l'entreprise :</strong> <strong>Data / Analytics / BI Team</strong>. Vous fournissez les chiffres au DG et aux métiers. Un chiffre faux = décision stratégique fausse. Vous êtes aussi le dernier rempart de la gouvernance des données - vous gérez les PII des 10 000 utilisateurs.</p>
+
+  <h5>Implémentation (simple, ~5 jours de code)</h5>
+  <ul>
+    <li><code>docker-compose.yml</code> : <code>postgres_dwh + outil BI au choix</code></li>
+    <li><strong>Modèle en étoile</strong> : <code>fact_transactions</code> (grain = 1 ligne par tx) + dimensions <code>dim_date</code>, <code>dim_user</code>, <code>dim_merchant</code>, <code>dim_agency</code>, <code>dim_node</code></li>
+    <li>Scripts SQL ou projet <strong>dbt-core</strong> pour transformer Gold (G3) → star schema</li>
+    <li><strong>Dashboard BI (outil au choix)</strong> avec 5-6 des 15 questions métier (<code>business_questions.md</code>)</li>
+    <li><strong>Choix SCD obligatoire</strong> : expliquer et justifier la stratégie retenue (Type 1, Type 2 ou hybride) pour <code>dim_user</code></li>
+    <li>Stratégie à définir pour les 1 549 CONFLICT dont ~1 529 n'ont pas <code>amount_node_a/b</code> renseignés</li>
+    <li>Rapport sur l'écart de 1,3 M MRU entre <code>node_metrics</code> et <code>stg_transactions</code></li>
+  </ul>
+
+  <h5>Doc d'architecture AWS (complexe, ~3 jours)</h5>
+  <ul>
+    <li><strong>Hébergement à scale :</strong> <strong>AWS Redshift</strong> Serverless (pay-per-use, pas de gestion de capacité) OU <strong>Athena</strong> sur S3 Parquet si le volume reste modeste (&lt; 1 TB). Comparer : Redshift pour requêtes interactives sub-seconde, Athena pour coût minimum et flexibilité</li>
+    <li><strong>Séparation OLTP / DWH :</strong> le DWH <em>ne doit jamais</em> tourner sur la même instance que l'OLTP de G1. Une requête analytique lourde ne doit pas bloquer un paiement. Schéma de séparation obligatoire</li>
+    <li><strong>Réseau :</strong> Redshift en <strong>Enhanced VPC Routing</strong>, outil BI en ECS Fargate privé (ou service managé équivalent) derrière ALB + <strong>Cognito</strong> authentifiant les utilisateurs internes</li>
+    <li><strong>Sécurité &amp; gouvernance :</strong>
+      <ul>
+        <li>Row-level security via Redshift RLS : un chef d'agence ne voit que sa wilaya</li>
+        <li>Column-level masking : masquer <code>phone</code>, <code>nni</code>, <code>email</code> pour les analystes juniors (Redshift Dynamic Data Masking)</li>
+        <li>Catalogage via <strong>AWS Glue Data Catalog</strong> + tagging PII avec <strong>Macie</strong> (détection automatique des données sensibles)</li>
+        <li>IAM users/roles par outil BI, jamais de compte partagé, Redshift Query Monitoring Rules</li>
+        <li>Export CSV limité en taille + audit log via <strong>CloudTrail</strong></li>
+      </ul>
+    </li>
+    <li><strong>Threat model :</strong> analyste qui exfiltre un dump complet (quota + audit), token/session outil BI qui fuite (rotation + SSO), requête runaway qui coûte 500 $ (WLM queues + concurrency scaling limit). 3 mitigations concrètes</li>
+    <li><strong>Protocole :</strong> Redshift via JDBC/ODBC TLS, outil BI ↔ Redshift via IAM Auth (IAM database credentials), accès utilisateur outil BI via SSO Cognito ou SAML</li>
+    <li><strong>Scale &amp; coût :</strong> materialized views Redshift pour les questions fréquentes, partitionnement/distribution par <code>transaction_date</code>, clustering par <code>wilaya_id</code>, <strong>ElastiCache Redis</strong> pour les compteurs live, Redshift Reserved Nodes si prévisible</li>
+    <li><strong>Fraîcheur des données :</strong> batch J+1 pour les KPI historiques, near-real-time (toutes les 5 min) pour le jour courant, live counter via Kinesis → ElastiCache Redis pour le tx/seconde. Expliquer comment réconcilier les trois vues</li>
+  </ul>
+</div>
+
+</section>
+
+<!-- ============================================== -->
+<section id="stack">
+<h2>Choix de stack par chemin critique</h2>
+
+<p>Dans une vraie fintech, <strong>le langage n'est pas un détail</strong>. Mais la vraie question n'est pas "quel est le meilleur langage", c'est "quel langage sur quel chemin". Un système de paiement a au moins trois chemins distincts avec des contraintes très différentes.</p>
+
+<h3>Les 3 chemins d'une fintech</h3>
+
+<table>
+  <thead>
+    <tr><th>Chemin</th><th>Contrainte principale</th><th>Langages adaptés (ordre de préférence)</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Write-path critique</strong><br>(ledger, mouvement d'argent, idempotence, concurrence)</td>
+      <td>Concurrence vraie (multi-cœurs), typage fort, latence prédictible, pas de GC long</td>
+      <td><strong>Go</strong> · <strong>Java / Kotlin (Spring Boot)</strong> · <strong>C# / .NET</strong> · Rust (niche)</td>
+    </tr>
+    <tr>
+      <td><strong>API publique / BFF / gateway</strong><br>(endpoints REST/GraphQL, webhooks)</td>
+      <td>I/O-bound, throughput correct, time-to-market</td>
+      <td>Go · Java · <strong>Node.js / TypeScript</strong> · Python (FastAPI) - tous valides ici</td>
+    </tr>
+    <tr>
+      <td><strong>Data / Analytics / ML</strong><br>(ETL, fraud detection, scoring, reporting, DWH)</td>
+      <td>Écosystème data, prototypage rapide, bibliothèques scientifiques</td>
+      <td><strong>Python</strong> (pandas, dbt, scikit, PyTorch) · SQL pur · Scala (Spark)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Pourquoi Go / Java / C# sur le write-path, et pas Python / Node ?</h3>
+
+<table>
+  <thead>
+    <tr><th>Langage</th><th>Force</th><th>Limite sur le write-path fintech</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Go</strong></td><td>Goroutines légères, channels, compile en un binaire statique (déploiement trivial sur Hetzner), GC court et prédictible</td><td>Écosystème métier bancaire moins riche que Java, moins de frameworks "clés en main"</td></tr>
+    <tr><td><strong>Java / Kotlin</strong></td><td>JVM mature, Project Loom (virtual threads) depuis Java 21, JTA, écosystème bancaire dominant (Revolut, N26, Adyen, Wise, Klarna tournent dessus)</td><td>Image mémoire plus lourde, startup plus lent (atténué par GraalVM)</td></tr>
+    <tr><td><strong>C# / .NET</strong></td><td>async/await excellent, Task Parallel Library, très utilisé dans les banques traditionnelles européennes</td><td>Écosystème plus centré Microsoft, moins d'exemples cloud-natifs open-source</td></tr>
+    <tr><td style="background:#fdecea;"><strong>Python</strong></td><td>Roi de la data (G2, G3, G4 !), ML, scripts d'intégration, backoffice</td><td>Le <strong>GIL</strong> sérialise l'exécution Python : pas de concurrence CPU réelle sur un seul process. Typage dynamique = moins de garanties à la compilation sur de l'argent</td></tr>
+    <tr><td style="background:#fdecea;"><strong>Node.js / TypeScript</strong></td><td>I/O event-driven rapide, partage du code front/back, excellent pour gateways et webhooks</td><td><strong>Event-loop single-threaded</strong> : une opération CPU-bound bloque tout le process. Typage optionnel, gestion du float qui peut faire perdre des centimes</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <strong>L'erreur classique à ne pas faire</strong>
+  Écrire le service de paiement en Python "parce qu'on connaît Python". Le GIL + le typage dynamique + l'absence de goroutines/virtual threads vont vous rattraper en production : timeouts, conditions de course, et potentiellement de l'argent perdu ou dupliqué. Python reste <em>le</em> bon choix pour les groupes <strong>G2, G3, G4</strong> de ce projet (simulateur, ETL, DWH). Mais si un jour vous construisez le vrai write-path, passez à Go, Java ou C#.
+</div>
+
+<div class="callout info">
+  <strong>Ce qu'on attend dans vos docs d'archi, par groupe</strong>
+  <ul>
+    <li><strong>G1 (OLTP)</strong> : "Postgres pour le stockage. Pour l'application qui écrit dedans, Go ou Java/Spring Boot - pas Python - car le write-path est concurrent et chaque transaction doit respecter des invariants monétaires stricts."</li>
+    <li><strong>G2 (Simulator)</strong> : "Python pour l'analyse et le simulateur batch (pandas, numpy, scipy). Si streaming temps réel, réécrire le producteur critique en Go."</li>
+    <li><strong>G3 (ETL)</strong> : "Python + SQL pour le pipeline batch. En production streaming, l'étage critique de déduplication passe en Go ou Java, Python reste sur la transformation."</li>
+    <li><strong>G4 (DWH)</strong> : "SQL + Python (dbt) - pas de débat, c'est l'écosystème standard."</li>
+  </ul>
+  Un étudiant qui raisonne par <em>chemin</em> et non par <em>dogme de langage</em> a compris le métier.
+</div>
+
+<h3>Services AWS à utiliser (liste blanche)</h3>
+
+<p>Tous les groupes travaillent sur <strong>AWS</strong>. Pour rester lisible et crédible, limitez-vous aux services <strong>bien connus</strong>. Pas de service exotique dont personne ne vérifiera la disponibilité en région Paris.</p>
+
+<table>
+  <thead>
+    <tr><th>Besoin</th><th>Service AWS (bien connu)</th><th>Quand l'utiliser</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Machine virtuelle / compute</td><td><strong>EC2</strong></td><td>Quand vous avez besoin d'un OS complet, de persistance locale, de contrôle bas niveau</td></tr>
+    <tr><td>Container managé (long-running)</td><td><strong>ECS</strong> avec <strong>Fargate</strong></td><td>API Web, services stateful, pas envie de gérer Kubernetes</td></tr>
+    <tr><td>Container managé (Kubernetes)</td><td><strong>EKS</strong></td><td>Déjà une expertise K8s, besoin d'écosystème CNCF</td></tr>
+    <tr><td>Fonctions serverless</td><td><strong>Lambda</strong></td><td>Jobs courts (&lt; 15 min), événementiel, pics sporadiques</td></tr>
+    <tr><td>Base relationnelle managée</td><td><strong>RDS PostgreSQL</strong> (multi-AZ)</td><td>OLTP de G1, staging de G3/G4</td></tr>
+    <tr><td>Stockage objet</td><td><strong>S3</strong></td><td>Landing zone des dumps (G3), backup, statique React (G2)</td></tr>
+    <tr><td>Message broker / streaming</td><td><strong>Kinesis Data Streams</strong> / <strong>SQS</strong> / <strong>SNS</strong></td><td>Kinesis pour stream ordonné, SQS pour queue, SNS pour fan-out pub/sub</td></tr>
+    <tr><td>Data warehouse analytique</td><td><strong>Redshift</strong> (ou <strong>Athena</strong> sur S3)</td><td>DWH de G4. Athena si volume modeste et pay-per-query</td></tr>
+    <tr><td>Cache en mémoire</td><td><strong>ElastiCache for Redis</strong></td><td>Compteurs live (G4), session, rate limiting</td></tr>
+    <tr><td>CDN</td><td><strong>CloudFront</strong></td><td>Front React (G2), assets statiques</td></tr>
+    <tr><td>Load Balancer</td><td><strong>ALB</strong> (HTTP/HTTPS) / <strong>NLB</strong> (TCP)</td><td>ALB pour l'API de G2</td></tr>
+    <tr><td>WAF / DDoS</td><td><strong>AWS WAF</strong> + <strong>AWS Shield</strong></td><td>Protection OWASP, anti-DDoS devant ALB ou CloudFront</td></tr>
+    <tr><td>Secrets &amp; config</td><td><strong>Secrets Manager</strong> / <strong>Systems Manager Parameter Store</strong></td><td>Mots de passe DB, API keys, rotation automatique</td></tr>
+    <tr><td>Réseau privé</td><td><strong>VPC</strong> + <strong>PrivateLink</strong></td><td>Isolation, accès RDS sans IP publique</td></tr>
+    <tr><td>Orchestration batch / scheduler</td><td><strong>EventBridge</strong> + <strong>Step Functions</strong></td><td>Déclenche les jobs G3, orchestration multi-étapes</td></tr>
+    <tr><td>Monitoring / logs</td><td><strong>CloudWatch</strong> (Logs, Metrics, Alarms)</td><td>Logs applicatifs, métriques p50/p95/p99, alertes</td></tr>
+    <tr><td>Identité applicative</td><td><strong>IAM</strong> + <strong>Cognito</strong></td><td>IAM pour services, Cognito pour utilisateurs finaux (G2)</td></tr>
+    <tr><td>Chiffrement clés</td><td><strong>KMS</strong></td><td>Clés de chiffrement at-rest RDS/S3, rotation</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <strong>Règle stricte du doc d'archi</strong>
+  Si vous mentionnez un service, il doit apparaître dans ce tableau <em>ou</em> être un produit open-source très standard (PostgreSQL, Redis, Docker, dbt, Superset, Metabase, Airflow). Tout service exotique non justifié = malus. Pas de mention de GCP, Azure, Snowflake, Databricks, ou autres plateformes - <strong>AWS uniquement</strong>. Cette contrainte vous force à concevoir proprement.
+</div>
+</section>
+
+<!-- ============================================== -->
+
+<!-- ============================================== -->
+<section id="faq">
+<h2>6. FAQ &amp; règles du jeu</h2>
+
+<h4>Q - Stack imposée ou libre ?</h4>
+<p>Stack conseillée : <strong>PostgreSQL / DuckDB / Python</strong>. Vous pouvez en proposer une autre si vous justifiez le choix dans votre doc d'archi Early Stage.</p>
+
+<h4>Q - Les 4 groupes utilisent-ils le même dataset ?</h4>
+<p>Non - chaque groupe a son propre jeu de données (volumes différents) généré avec la même seed 42 pour garder la cohérence métier (mêmes wilayas, mêmes types de tx, même périmètre). Vous n'avez <strong>pas</strong> besoin des livrables d'un autre groupe pour travailler.</p>
+
+<h4>Q - Taille des équipes ?</h4>
+<p>Chaque groupe est composé de <strong>5 personnes</strong>. Organisation interne libre. Un seul dépôt Git, commits traçables par auteur.</p>
+
+<h4>Q - IA &amp; assistants de code</h4>
+<p>Autorisés pour apprendre et débloquer, <strong>mais</strong> chaque choix d'architecture doit pouvoir être expliqué à l'oral. Un doc d'archi généré sans compréhension se repère en 30 secondes.</p>
+
+<h4>Q - Deadline &amp; rendu</h4>
+<p>Lien du dépôt Git à envoyer au format :<br>
+<code>[Nom Groupe - GX] - https://github.com/.../...</code><br>
+avec les deux docs d'archi en PDF ou Markdown à la racine.</p>
+
+<h4>Q - Anomalies dans les données : bug ou feature ?</h4>
+<p><strong>Feature.</strong> Toutes les anomalies (soft-deletes, clock skew, conflits, doublons cross-DC, totaux node_metrics qui ne collent pas) sont intentionnelles. Les détecter et les gérer fait partie de la notation.</p>
+
+</section>
+
+<footer>
+  NAFAD-PAY - Projet pédagogique Data &amp; Systèmes Distribués · Données 100 % synthétiques (seed 42) · Ne pas redistribuer hors formation
+</footer>
+
+</body>
+</html>
