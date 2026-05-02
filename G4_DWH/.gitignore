@@ -1,0 +1,16 @@
+# Secrets 
+.env
+
+# Données CSV - trop lourdes pour Git
+data/
+
+# Fichiers système Windows
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+
+# Metabase
+metabase.db/
