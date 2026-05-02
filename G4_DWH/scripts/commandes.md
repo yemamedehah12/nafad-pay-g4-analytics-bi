@@ -1,46 +1,46 @@
-Étape 1 — Configurer l'environnement
+# Étape 1 — Configurer l'environnement
 
-# Copier le fichier de config
+## Copier le fichier de config
 
 cp .env.example .env
 
-# Ouvrir .env et vérifier que DB_PASSWORD est défini
+## Ouvrir .env et vérifier que DB_PASSWORD est défini
 
 cat .env
 
-# Vérifier que les CSV sont bien là
+## Vérifier que les CSV sont bien là
 
 ls data/
 
-# Tu dois voir :
+ Tu dois voir :
 
-# stg_transactions.csv
+ stg_transactions.csv
 
-# stg_users.csv
+ stg_users.csv
 
-# stg_merchants.csv
+ stg_merchants.csv
 
-# stg_agencies.csv
+ stg_agencies.csv
 
-# stg_fees.csv
+ stg_fees.csv
 
-# node_metrics.csv
+ node_metrics.csv
 
-Étape 2 — Démarrer PostgreSQL
+# Étape 2 — Démarrer PostgreSQL
 docker-compose up -d postgres_dwh
 docker-compose ps
 
-# postgres_dwh doit être "healthy"
+postgres_dwh doit être "healthy"
 
-Étape 3 — Lancer l'ETL (charger toutes les données)
+# Étape 3 — Lancer l'ETL (charger toutes les données)
 
 docker-compose --profile etl run --rm etl
 
-Étape 4 — Démarrer Metabase
+# Étape 4 — Démarrer Metabase
 
 docker-compose up -d metabase
 
-# Vérifier les conteneurs actifs
+Vérifier les conteneurs actifs
 
 docker-compose ps
 
