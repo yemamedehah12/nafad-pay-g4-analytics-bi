@@ -26,16 +26,21 @@ fi
 
 # Démarrer PostgreSQL
 echo "→ Démarrage PostgreSQL..."
-docker-compose up -d postgres_dwh
-sleep 15
+docker compose up -d postgres_dwh
+
+# Attendre que PostgreSQL soit healthy
+echo "→ Attente que PostgreSQL soit prêt..."
+until [ "$(docker inspect --format='{{.State.Health.Status}}' nafad_dwh 2>/dev/null)" = "healthy" ]; do
+    sleep 3
+done
 
 # Lancer l'ETL
 echo "→ Chargement des données..."
-docker-compose --profile etl run --rm etl
+docker compose --profile etl run --rm etl
 
 # Démarrer Metabase
 echo "→ Démarrage Metabase..."
-docker-compose up -d metabase
+docker compose up -d metabase
 
 echo ""
 echo "=============================="
